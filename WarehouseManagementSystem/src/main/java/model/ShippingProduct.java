@@ -1,9 +1,9 @@
 package model;
 
-public class ShippedProduct extends Product{
+public class ShippingProduct extends Product{
 	private String destination, currier, shipped_dateandtime;
 	
-	ShippedProduct(int product_id, 
+	public ShippingProduct(int product_id, 
 			String product_name, 
 			String status,
 			String destination,
@@ -29,7 +29,7 @@ public class ShippedProduct extends Product{
     public String getShippedDateandTime() {return shipped_dateandtime;}
     public void setShippedDateandTime(String shipped_dateandtime) {this.shipped_dateandtime = shipped_dateandtime;}
 	
-    public String getDetail() {
+    public String getDetails() {
     	return "destination: " + destination + ", currier: " + currier  + ", Shipped Date and Time: " + shipped_dateandtime;
     }
 	

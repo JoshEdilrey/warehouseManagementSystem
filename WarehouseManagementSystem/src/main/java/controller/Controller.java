@@ -23,7 +23,7 @@ public class Controller {
 	
 	public List<ProductRecord> loadDataFromDB() {
 		try {
-			return model.loadDataToProductRecord(model.getArrivingProducts());
+			return model.loadDataToProductRecord(model.getArrivingProducts(), model.getStoredProducts(), model.getShippingProducts());
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			JOptionPane.showMessageDialog(null, "An error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);		}

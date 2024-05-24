@@ -5,7 +5,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.plaf.ColorUIResource;
+
+import model.ProductRecord;
+
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JScrollPane;
@@ -25,7 +30,7 @@ import javax.swing.BorderFactory;
 
 public class Dashboard extends JFrame{
 
-    private ArrayList<ProductRecord> productRecords;
+    private List<ProductRecord> productRecords;
     private JPanel productListPanel;
     private String currentFilterStatus = "All";
     private JLabel arrivingCardLabel;
@@ -106,7 +111,10 @@ public class BottomShadowBorder implements Border {
 
 
     //file name
-    public Dashboard() {
+    public Dashboard(List<ProductRecord> list) {
+    	
+    	
+    	
         // Initialize product records list
 	UIManager.put("Panel.background",defaultBackgroundColor);            
 	UIManager.put("ToggleButton.select", new ColorUIResource(selectedBackgroundColor));
@@ -122,11 +130,8 @@ public class BottomShadowBorder implements Border {
             e.printStackTrace();
         }
         
-       
-        
-        
- // Initialize product records list
-        productRecords = new ArrayList<>();
+        // Initialize product records list
+        this.productRecords = list;
 
         // Set up the main frame
         setTitle("Dashboard");
@@ -324,37 +329,46 @@ add(shippingButton);
         // Product List Panel
       productListPanel = new JPanel();
       
-     
-productListPanel.setLayout(new BoxLayout(productListPanel, BoxLayout.Y_AXIS));
-JScrollPane scrollPane = new JScrollPane(productListPanel);
-
-scrollPane.setBorder(BorderFactory.createEmptyBorder()); // Set an empty border
-scrollPane.setBounds(100, 70, 1150, 500); // Set the bounds of the scroll pane
-
-scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED); // Set vertical scrollbar policy
-scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED); // Set horizontal scrollbar policy  
-
-// Get the vertical scrollbar
-JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
-// Get the horizontal scrollbar
-JScrollBar horizontalScrollBar = scrollPane.getHorizontalScrollBar();
-
-// Set custom unit and block increments for vertical scrollbar
-verticalScrollBar.setUnitIncrement(20); // Adjust this value as needed
-verticalScrollBar.setBlockIncrement(100); // Adjust this value as needed
-
-// Set custom unit and block increments for horizontal scrollbar
-horizontalScrollBar.setUnitIncrement(20); // Adjust this value as needed
-horizontalScrollBar.setBlockIncrement(100); // Adjust this value as needed
-
-add(scrollPane); // Add the scroll pane to the container
-
-
-               
+	     
+	productListPanel.setLayout(new BoxLayout(productListPanel, BoxLayout.Y_AXIS));
+	JScrollPane scrollPane = new JScrollPane(productListPanel);
+	
+	scrollPane.setBorder(BorderFactory.createEmptyBorder()); // Set an empty border
+	scrollPane.setBounds(100, 70, 1150, 500); // Set the bounds of the scroll pane
+	
+	scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED); // Set vertical scrollbar policy
+	scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED); // Set horizontal scrollbar policy  
+	
+	// Get the vertical scrollbar
+	JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+	// Get the horizontal scrollbar
+	JScrollBar horizontalScrollBar = scrollPane.getHorizontalScrollBar();
+	
+	// Set custom unit and block increments for vertical scrollbar
+	verticalScrollBar.setUnitIncrement(20); // Adjust this value as needed
+	verticalScrollBar.setBlockIncrement(100); // Adjust this value as needed
+	
+	// Set custom unit and block increments for horizontal scrollbar
+	horizontalScrollBar.setUnitIncrement(20); // Adjust this value as needed
+	horizontalScrollBar.setBlockIncrement(100); // Adjust this value as needed
+	
+	add(scrollPane); // Add the scroll pane to the container
+	
+	
+	updateProductListPanel();
+	setVisible(true);          
         
 
 
     }
+    
+    
+    
+    
+    
+    
+    
+    
     //Sumamary cards panel
   private JLabel createSummaryCard(String text) {    
     JLabel label = new JLabel("<html><div style='text-align: center;'><br>"
@@ -406,6 +420,8 @@ add(scrollPane); // Add the scroll pane to the container
     label.setPreferredSize(new Dimension(150, 100));
 
     return label;
+    
+    
 }
 
 
@@ -941,53 +957,6 @@ deleteButton.setFocusPainted(false); // Disable focus border
     productListPanel.repaint();  
 }
 
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-                                     //filel name
-            Dashboard ui = new Dashboard();
-            ui.setVisible(true);
-        });  
-        
-       
-    }
-}
-
-// Separate class to store product records
-class ProductRecord {
-    private String productName;
-    private String status;
-    private String details;
-
-    public ProductRecord(String productName, String status, String details) {
-        this.productName = productName;
-        this.status = status;
-        this.details = details;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getDetails() {
-        return details;
-    }
-
-    public void setDetails(String details) {
-        this.details = details;
-    }
 }
 
 

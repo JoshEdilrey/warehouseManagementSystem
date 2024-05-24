@@ -1,5 +1,6 @@
 package com.main.WarehouseManagementSystem;
 
+import gui.Dashboard;
 import gui.Dashboard_Final;
 import sqldb.SQLCommandExecuter;
 import controller.Controller;
@@ -10,7 +11,7 @@ public class Main {
 		// TODO Auto-generated method stub
 		SQLCommandExecuter model = new SQLCommandExecuter();
 		Controller controller = new Controller(model);
-		Dashboard_Final view = new Dashboard_Final(controller.loadDataFromDB());
+		Dashboard view = new Dashboard(controller.loadDataFromDB());
 		
 	}
 

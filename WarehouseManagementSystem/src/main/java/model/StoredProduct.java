@@ -3,7 +3,7 @@ package model;
 public class StoredProduct extends Product{
 	private String shelf_location, stored_dateandtime;
 	
-	StoredProduct(int product_id, 
+	public StoredProduct(int product_id, 
 			String product_name, 
 			String status,
 			String shelf_location,
@@ -22,7 +22,7 @@ public class StoredProduct extends Product{
     public String getStoredDateandTime() {return stored_dateandtime;}
     public void setStoredDateandTime(String stored_dateandtime) {this.stored_dateandtime = stored_dateandtime;}
 	
-    public String getDetail() {
+    public String getDetails() {
     	return "Shelf Location: " + shelf_location + ", Stored Date and Time: " + stored_dateandtime;
     }
 	

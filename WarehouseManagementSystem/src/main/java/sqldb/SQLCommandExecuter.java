@@ -9,6 +9,8 @@ import java.util.List;
 
 import model.ArrivingProduct;
 import model.ProductRecord;
+import model.ShippingProduct;
+import model.StoredProduct;
 
 public class SQLCommandExecuter {
     private Connection connection;
@@ -20,13 +22,13 @@ public class SQLCommandExecuter {
     // querying arriving product
     public List<ArrivingProduct> getArrivingProducts() throws SQLException {
         List<ArrivingProduct> arrivingProducts = new ArrayList<>();
-        String query = "SELECT product_id, product_name, status, origin, condition, arrival_dateandtime FROM arrival_product_detail";
+        String query = "SELECT arrive_product_id, product_name, status, origin, condition, arrival_dateandtime FROM arrival_product_detail";
         Statement statement = connection.createStatement();
         ResultSet result = statement.executeQuery(query);
 
         while (result.next()) {
-            int productID = result.getInt("Product_id");
-            String productName = result.getString("Product_name");
+            int arrive_product_id = result.getInt("arrive_product_id");
+            String product_name = result.getString("product_name");
             String status = result.getString("status");
             String origin = result.getString("origin");
             String condition = result.getString("condition");
@@ -34,8 +36,9 @@ public class SQLCommandExecuter {
             
 
             System.out.println(
-            		"Fetched product ID: " + productID + 
-            		", name: " + productName + 
+            		"Arriving Products " +
+            		"Fetched product ID: " + arrive_product_id + 
+            		", name: " + product_name + 
             		", status: " + status +
             		", origin: " + origin + 
             		", condition: " + condition +
@@ -43,8 +46,8 @@ public class SQLCommandExecuter {
             		);
 
             ArrivingProduct product = new ArrivingProduct(
-            		productID, 
-            		productName, 
+            		arrive_product_id, 
+            		product_name, 
             		status,
             		origin,
             		condition,
@@ -68,88 +71,122 @@ public class SQLCommandExecuter {
     }
     
     
-    //
-    public List<StoredProduct> getArrivingProducts() throws SQLException {
-        List<ArrivingProduct> arrivingProducts = new ArrayList<>();
-        String query = "SELECT product_id, product_name, status, origin, condition, arrival_dateandtime FROM arrival_product_detail";
+    //querying stored products
+    public List<StoredProduct> getStoredProducts() throws SQLException {
+        List<StoredProduct> storedProducts = new ArrayList<>();
+        String query = "SELECT stored_product_id, product_name, status, shelf_location, stored_dateandtime FROM stored_product_detail";
         Statement statement = connection.createStatement();
         ResultSet result = statement.executeQuery(query);
 
         while (result.next()) {
-            int productID = result.getInt("Product_id");
-            String productName = result.getString("Product_name");
+        	int stored_product_id = result.getInt("stored_product_id");
+            String product_name = result.getString("product_name");
             String status = result.getString("status");
-            String origin = result.getString("origin");
-            String condition = result.getString("condition");
-            String arrival_dateandtime = result.getString("arrival_dateandtime");
+            String shelf_location = result.getString("shelf_location");
+            String stored_dateandtime = result.getString("stored_dateandtime");
             
 
             System.out.println(
-            		"Fetched product ID: " + productID + 
-            		", name: " + productName + 
+            		"Stored Products " +
+            		"Fetched product ID: " + stored_product_id + 
+            		", name: " + product_name + 
             		", status: " + status +
-            		", origin: " + origin + 
-            		", condition: " + condition +
-            		", arrival_dateandtime: " + arrival_dateandtime
+            		", shelf_location: " + shelf_location + 
+            		", stored_dateandtime: " + stored_dateandtime
             		);
 
-            ArrivingProduct product = new ArrivingProduct(
-            		productID, 
-            		productName, 
+            StoredProduct product = new StoredProduct(
+            		stored_product_id, 
+            		product_name, 
             		status,
-            		origin,
-            		condition,
-            		arrival_dateandtime
+            		shelf_location,
+            		stored_dateandtime
             		);
             
             
-            arrivingProducts.add(product);
+            storedProducts.add(product);
         }
         
-        System.out.println("size: " + arrivingProducts.size());
+        System.out.println("size: " + storedProducts.size());
         
         
-        for(int i = 0;i < arrivingProducts.size(); i++) {
-        	System.out.println(arrivingProducts.get(i).getProductName());
+        for(int i = 0;i < storedProducts.size(); i++) {
+        	System.out.println(storedProducts.get(i).getProductName());
         }
         /*for (ArrivingProduct product : arrivingProducts) {
         	System.out.println(product.getProductName());
         }*/
-        return arrivingProducts;
+        return storedProducts;
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+  //querying Shipping products
+    public List<ShippingProduct> getShippingProducts() throws SQLException {
+        List<ShippingProduct> shippingProducts = new ArrayList<>();
+        String query = "SELECT shipping_product_id, product_name, status, destination, courier, shipping_dateandtime FROM shipping_product_detail";
+        Statement statement = connection.createStatement();
+        ResultSet result = statement.executeQuery(query);
+
+        while (result.next()) {
+            int shipping_product_id = result.getInt("shipping_product_id");
+            String product_name = result.getString("product_name");
+            String status = result.getString("status");
+            String destination = result.getString("destination");
+            String courier = result.getString("courier");
+            String shipping_dateandtime = result.getString("shipping_dateandtime");
+
+
+            System.out.println(
+            		"Stored Products " +
+            		"Fetched product ID: " + shipping_product_id + 
+            		", name: " + product_name + 
+            		", status: " + status +
+            		", destination: " + destination +
+            		", courier: " + courier + 
+            		", shipping_dateandtime: " + shipping_dateandtime
+            		);
+
+            ShippingProduct product = new ShippingProduct(
+            		shipping_product_id, 
+            		product_name, 
+            		status,
+            		destination,
+            		courier,
+            		shipping_dateandtime
+            		);
+            
+            
+            shippingProducts.add(product);
+        }
+        
+        System.out.println("size: " + shippingProducts.size());
+        
+        
+        for(int i = 0;i < shippingProducts.size(); i++) {
+        	System.out.println(shippingProducts.get(i).getProductName());
+        }
+        /*for (ArrivingProduct product : arrivingProducts) {
+        	System.out.println(product.getProductName());
+        }*/
+        return shippingProducts;
+    }
     
 
-    public List<ProductRecord> loadDataToProductRecord(List<ArrivingProduct> arrivingProducts) {
+    public List<ProductRecord> loadDataToProductRecord(List<ArrivingProduct> arrivingProducts, List<StoredProduct> storedProducts, List<ShippingProduct> shippingProducts) {
         List<ProductRecord> productRecords = new ArrayList<>();
         for (ArrivingProduct product : arrivingProducts) {
+            System.out.println("Creating ProductRecord for product ID: " + product.getProductID() + ", name: " + product.getProductName() + ", status: " + product.getStatus());
+            ProductRecord productRecord = new ProductRecord(product.getProductName(), product.getStatus(), product.getDetails());
+            productRecords.add(productRecord);
+        }
+        
+        
+        for (StoredProduct product : storedProducts) {
+            System.out.println("Creating ProductRecord for product ID: " + product.getProductID() + ", name: " + product.getProductName() + ", status: " + product.getStatus());
+            ProductRecord productRecord = new ProductRecord(product.getProductName(), product.getStatus(), product.getDetails());
+            productRecords.add(productRecord);
+        }
+        
+        for (ShippingProduct product : shippingProducts) {
             System.out.println("Creating ProductRecord for product ID: " + product.getProductID() + ", name: " + product.getProductName() + ", status: " + product.getStatus());
             ProductRecord productRecord = new ProductRecord(product.getProductName(), product.getStatus(), product.getDetails());
             productRecords.add(productRecord);
