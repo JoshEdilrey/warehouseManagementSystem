@@ -1,9 +1,9 @@
 package model;
 
-public class ShippingProduct extends Product{
+public class ShippedProduct extends Product{
 	private String destination, currier, shipped_dateandtime;
 	
-	public ShippingProduct(int product_id, 
+	public ShippedProduct(int product_id, 
 			String product_name, 
 			String status,
 			String destination,
@@ -18,6 +18,19 @@ public class ShippingProduct extends Product{
 		this.currier = currier;
 		this.shipped_dateandtime = shipped_dateandtime;
 		
+	}
+	
+	
+	public ShippedProduct(int product_id, 
+			String product_name, 
+			String status
+			) {
+
+	super(product_id, product_name, status);
+	this.destination = "N/A";
+	this.currier = "N/A";
+	this.shipped_dateandtime = "N/A";
+	
 	}
 	
 	public String getDestination() {return destination;}

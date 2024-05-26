@@ -5,11 +5,19 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.swing.plaf.ColorUIResource;
 
+import controller.Controller;
+import model.ArrivingProduct;
 import model.ProductRecord;
+import model.ShippedProduct;
+import model.StoredProduct;
 import sqldb.SQLCommandExecuter;
 
 import java.io.File;
@@ -33,90 +41,91 @@ public class Dashboard extends JFrame{
 
     private List<ProductRecord> productRecords;
     private SQLCommandExecuter sqlexecute;
+    private Controller controller;
     private JPanel productListPanel;
     private String currentFilterStatus = "All";
     private JLabel arrivingCardLabel;
     private JLabel storedCardLabel;
     private JLabel shippingCardLabel;
     private JPanel summaryCardPanel;
-    
-//white
-Color defaultBackgroundColor = new Color(251, 251, 251);
+	    
+	//white
+	Color defaultBackgroundColor = new Color(251, 251, 251);
+	Color defaultTextColor = new Color(12, 116, 137);
+	Color selectedBackgroundColor = new Color(12, 116, 137);
+	
+	//white
+	Color selectedTextColor = new Color(251, 251, 251);
 
-Color defaultTextColor = new Color(12, 116, 137);
+	
+	
+	
+	
+	public class BottomShadowBorder implements Border {
+	    private int thickness;
+	    private Color shadowColor;
+	    private Insets insets;
+	
+	    public BottomShadowBorder(int thickness, Color shadowColor) {
+	        this.thickness = thickness;
+	        this.shadowColor = shadowColor;
+	        this.insets = new Insets(0, 0, thickness, 0); // Only bottom insets
+	    }
+	
+	    @Override
+	    public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+	        Graphics2D g2 = (Graphics2D) g.create();
+	        g2.setColor(shadowColor);
+	
+	        // Draw bottom shadow
+	        g2.fillRect(x, y + height - thickness, width, thickness);
+	
+	        g2.dispose();
+	    }
+	
+	    @Override
+	    public Insets getBorderInsets(Component c) {
+	        return insets;
+	    }
+	
+	    @Override
+	    public boolean isBorderOpaque() {
+	        return true;
+	    }
+	}
 
-Color selectedBackgroundColor = new Color(12, 116, 137);
-
-//white
-Color selectedTextColor = new Color(251, 251, 251);
-
-
-public class BottomShadowBorder implements Border {
-    private int thickness;
-    private Color shadowColor;
-    private Insets insets;
-
-    public BottomShadowBorder(int thickness, Color shadowColor) {
-        this.thickness = thickness;
-        this.shadowColor = shadowColor;
-        this.insets = new Insets(0, 0, thickness, 0); // Only bottom insets
-    }
-
-    @Override
-    public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setColor(shadowColor);
-
-        // Draw bottom shadow
-        g2.fillRect(x, y + height - thickness, width, thickness);
-
-        g2.dispose();
-    }
-
-    @Override
-    public Insets getBorderInsets(Component c) {
-        return insets;
-    }
-
-    @Override
-    public boolean isBorderOpaque() {
-        return true;
-    }
-}
-
-   Border roundedBorder = new Border() {
+	Border roundedBorder = new Border() {
+			   
 	   
-	   
-            @Override
-            public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(Color.gray);
-                g2.setStroke(new BasicStroke(1));
-                g2.drawRoundRect(x, y, width - 1, height - 1, 20, 15); // Adjust the rounding radius as needed
-                g2.dispose();
-            }
+	        @Override
+	        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+	            Graphics2D g2 = (Graphics2D) g.create();
+	            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+	            g2.setColor(Color.gray);
+	            g2.setStroke(new BasicStroke(1));
+	            g2.drawRoundRect(x, y, width - 1, height - 1, 20, 15); // Adjust the rounding radius as needed
+	        g2.dispose();
+	}
+	
+	@Override
+	public Insets getBorderInsets(Component c) {
+	    return new Insets(1, 1, 1, 1); // Adjust the insets as needed
+	    }
+	
+	    @Override
+	    public boolean isBorderOpaque() {
+	        return true;
+	    }
+	};
 
-            @Override
-            public Insets getBorderInsets(Component c) {
-                return new Insets(1, 1, 1, 1); // Adjust the insets as needed
-            }
-
-            @Override
-            public boolean isBorderOpaque() {
-                return true;
-            }
-        };
- 
-
-
-
-
-    //file name
     public Dashboard(List<ProductRecord> list) {
     	
+    	// Initialize product records list
+        this.productRecords = list;
+        this.sqlexecute = new SQLCommandExecuter();
+        this.controller = new Controller(sqlexecute);
     	
-    	
+        
         // Initialize product records list
 	UIManager.put("Panel.background",defaultBackgroundColor);            
 	UIManager.put("ToggleButton.select", new ColorUIResource(selectedBackgroundColor));
@@ -132,10 +141,6 @@ public class BottomShadowBorder implements Border {
             e.printStackTrace();
         }
         
-        // Initialize product records list
-        this.productRecords = list;
-        this.sqlexecute = new SQLCommandExecuter();
-
         // Set up the main frame
         setTitle("Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -364,77 +369,65 @@ add(shippingButton);
 
 
     }
-    
-    
-    public void savingRecords(List<ProductRecord> productRecords) {
-    	
-    	for(ProductRecord record : productRecords)
-    	sqlexecute.processRecordDetailsAndSave(record.getStatus(), record.getDetails());
-    }
-    
-    
-    
-    
-    
-    
-    //Sumamary cards panel
-  private JLabel createSummaryCard(String text) {    
-    JLabel label = new JLabel("<html><div style='text-align: center;'><br>"
-                              + "<span style='font-size:16px;font-weight:bold;'>" + text + "</span><br>"
-                              + "</div></html>");
+     
+   
+	//Summary cards panel
+	private JLabel createSummaryCard(String text) {    
+	    JLabel label = new JLabel("<html><div style='text-align: center;'><br>"
+	                              + "<span style='font-size:16px;font-weight:bold;'>" + text + "</span><br>"
+	                              + "</div></html>");
+	
+	    // Load and set the custom font
+	    Font comfortaaFont = null;
+	    try {
+	        comfortaaFont = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/fonts/Comfortaa-Bold.ttf")).deriveFont(14f);
+	    } catch (FontFormatException | IOException e) {
+	        e.printStackTrace();
+	        // Set a fallback font in case the custom font fails to load
+	        comfortaaFont = new Font("SansSerif", Font.PLAIN, 14);
+	    }
+	    
+	    // Resize the font
+	    Font resizedComfortaaFont = comfortaaFont.deriveFont(11f);
+	    label.setFont(resizedComfortaaFont);
+	
+	    // Set border, background, and other properties
+	    Border roundedBorder = new Border() {
+	            @Override
+	            public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+	                Graphics2D g2 = (Graphics2D) g.create();
+	                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+	                g2.setColor(Color.gray);
+	                g2.setStroke(new BasicStroke(1));
+	                g2.drawRoundRect(x, y, width - 1, height - 1, 20, 15); // Adjust the rounding radius as needed
+	                g2.dispose();
+	            }
+	
+	            @Override
+	            public Insets getBorderInsets(Component c) {
+	                return new Insets(1, 1, 1, 1); // Adjust the insets as needed
+	            }
+	
+	            @Override
+	            public boolean isBorderOpaque() {
+	                return true;
+	            }
+	        };
+	    label.setBorder(roundedBorder);
+	    label.setOpaque(true);
+	    Color defaultBackgroundColor = new Color(251, 251, 251);
+	    label.setBackground(defaultBackgroundColor);
+	
+	    // Set preferred size
+	    label.setPreferredSize(new Dimension(150, 100));
+	
+	    return label;
+	    
+	    
+	}
 
-    // Load and set the custom font
-    Font comfortaaFont = null;
-    try {
-        comfortaaFont = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/fonts/Comfortaa-Bold.ttf")).deriveFont(14f);
-    } catch (FontFormatException | IOException e) {
-        e.printStackTrace();
-        // Set a fallback font in case the custom font fails to load
-        comfortaaFont = new Font("SansSerif", Font.PLAIN, 14);
-    }
-    
-    // Resize the font
-    Font resizedComfortaaFont = comfortaaFont.deriveFont(11f);
-    label.setFont(resizedComfortaaFont);
-
-    // Set border, background, and other properties
-    Border roundedBorder = new Border() {
-            @Override
-            public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(Color.gray);
-                g2.setStroke(new BasicStroke(1));
-                g2.drawRoundRect(x, y, width - 1, height - 1, 20, 15); // Adjust the rounding radius as needed
-                g2.dispose();
-            }
-
-            @Override
-            public Insets getBorderInsets(Component c) {
-                return new Insets(1, 1, 1, 1); // Adjust the insets as needed
-            }
-
-            @Override
-            public boolean isBorderOpaque() {
-                return true;
-            }
-        };
-    label.setBorder(roundedBorder);
-    label.setOpaque(true);
-    Color defaultBackgroundColor = new Color(251, 251, 251);
-    label.setBackground(defaultBackgroundColor);
-
-    // Set preferred size
-    label.setPreferredSize(new Dimension(150, 100));
-
-    return label;
-    
-    
-}
-
-
-
-
+	
+	
     private void showInputFrame(ProductRecord record) {
         // Create a new frame for input
         
@@ -592,137 +585,140 @@ add(shippingButton);
       arrivingButton.setForeground(defaultTextColor);
       storedButton.setForeground(defaultTextColor); 
  
-        
-        // Add action listener to arrivingButton
-arrivingButton.addActionListener(new ActionListener() {
-    public void actionPerformed(ActionEvent e) {     
-        // Toggle background and text colors   
-    arrivingButton.setBackground(arrivingButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
-    arrivingButton.setForeground(arrivingButton.isSelected() ? selectedTextColor : defaultTextColor);
+	        
+		// Add action listener to arrivingButton
+		arrivingButton.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {     
+		        // Toggle background and text colors   
+		    arrivingButton.setBackground(arrivingButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
+		    arrivingButton.setForeground(arrivingButton.isSelected() ? selectedTextColor : defaultTextColor);
+		
+		    storedButton.setBackground(storedButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
+		    storedButton.setForeground(storedButton.isSelected() ? selectedTextColor : defaultTextColor);
+		
+		    shippingButton.setBackground(shippingButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
+		    shippingButton.setForeground(shippingButton.isSelected() ? selectedTextColor : defaultTextColor);
+		       
+		    dynamicPanel.setBackground(defaultBackgroundColor);
+		
+		        dynamicPanel.removeAll();
+		        gbc.gridx = 0;
+		        gbc.gridy = 0;
+		        gbc.anchor = GridBagConstraints.WEST;
+		        gbc.fill = GridBagConstraints.HORIZONTAL;
+		        dynamicPanel.add(originLabel, gbc);
+		
+		        gbc.gridy++;
+		        dynamicPanel.add(originField, gbc);
+		
+		        gbc.gridy++;
+		        dynamicPanel.add(conditionLabel, gbc);
+		
+		        gbc.gridy++;
+		        dynamicPanel.add(conditionField, gbc);
+		
+		        gbc.gridy++;
+		        dynamicPanel.add(arrivalDateLabel, gbc);
+		
+		        gbc.gridy++;
+		        dynamicPanel.add(arrivalDateField, gbc);
+		
+		        dynamicPanel.setVisible(true);
+		        dynamicPanel.revalidate();
+		        dynamicPanel.repaint();
+		       
+		    }
+		});
+		
+		// Add action listener to storedButton
+		storedButton.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+		   
+		              // Set dynamicPanel visibility
+		    arrivingButton.setBackground(arrivingButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
+		    arrivingButton.setForeground(arrivingButton.isSelected() ? selectedTextColor : defaultTextColor);
+		
+		    storedButton.setBackground(storedButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
+		    storedButton.setForeground(storedButton.isSelected() ? selectedTextColor : defaultTextColor);
+		
+		    shippingButton.setBackground(shippingButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
+		    shippingButton.setForeground(shippingButton.isSelected() ? selectedTextColor : defaultTextColor);
+		   
+		    dynamicPanel.setBackground(defaultBackgroundColor);
+		    
+		        dynamicPanel.removeAll();
+		        gbc.gridx = 0;
+		        gbc.gridy = 0;
+		        gbc.anchor = GridBagConstraints.WEST;
+		        gbc.fill = GridBagConstraints.HORIZONTAL;
+		        dynamicPanel.add(storedLocationLabel, gbc);
+		
+		        gbc.gridy++;
+		        dynamicPanel.add(storedLocationField, gbc);
+		
+		        gbc.gridy++;
+		        dynamicPanel.add(storedDateLabel, gbc);
+		
+		        gbc.gridy++;
+		        dynamicPanel.add(storedDateField, gbc);
+		        
+		         
+		
+		        dynamicPanel.setVisible(true);
+		        dynamicPanel.revalidate();
+		        dynamicPanel.repaint();
+		 
+		    }
+		});
+		
+		// Add action listener to shippingButton
+		shippingButton.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {  
+		        // Set dynamicPanel visibility
+		    arrivingButton.setBackground(arrivingButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
+		    arrivingButton.setForeground(arrivingButton.isSelected() ? selectedTextColor : defaultTextColor);
+		
+		    storedButton.setBackground(storedButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
+		    storedButton.setForeground(storedButton.isSelected() ? selectedTextColor : defaultTextColor);
+		
+		    shippingButton.setBackground(shippingButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
+		    shippingButton.setForeground(shippingButton.isSelected() ? selectedTextColor : defaultTextColor);
+		           
+		    dynamicPanel.setBackground(defaultBackgroundColor);
+		    
+		        dynamicPanel.removeAll();
+		        gbc.gridx = 0;
+		        gbc.gridy = 0;
+		        gbc.anchor = GridBagConstraints.WEST;
+		        gbc.fill = GridBagConstraints.HORIZONTAL;
+		        dynamicPanel.add(destinationLabel, gbc);
+		
+		        gbc.gridy++;
+		        dynamicPanel.add(destinationField, gbc);
+		
+		        gbc.gridy++;
+		        dynamicPanel.add(courierLabel, gbc);
+		
+		        gbc.gridy++;
+		        dynamicPanel.add(courierField, gbc);
+		
+		        gbc.gridy++;
+		        dynamicPanel.add(shippedDateLabel, gbc);
+		
+		        gbc.gridy++;
+		        dynamicPanel.add(shippedDateField, gbc);
+		
+		        dynamicPanel.setVisible(true);
+		        dynamicPanel.revalidate();
+		        dynamicPanel.repaint();
+		        
+		   
+		    }
+		    
+		});
+		
+		
 
-    storedButton.setBackground(storedButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
-    storedButton.setForeground(storedButton.isSelected() ? selectedTextColor : defaultTextColor);
-
-    shippingButton.setBackground(shippingButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
-    shippingButton.setForeground(shippingButton.isSelected() ? selectedTextColor : defaultTextColor);
-       
-    dynamicPanel.setBackground(defaultBackgroundColor);
-
-        dynamicPanel.removeAll();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        dynamicPanel.add(originLabel, gbc);
-
-        gbc.gridy++;
-        dynamicPanel.add(originField, gbc);
-
-        gbc.gridy++;
-        dynamicPanel.add(conditionLabel, gbc);
-
-        gbc.gridy++;
-        dynamicPanel.add(conditionField, gbc);
-
-        gbc.gridy++;
-        dynamicPanel.add(arrivalDateLabel, gbc);
-
-        gbc.gridy++;
-        dynamicPanel.add(arrivalDateField, gbc);
-
-        dynamicPanel.setVisible(true);
-        dynamicPanel.revalidate();
-        dynamicPanel.repaint();
-       
-    }
-});
-
-// Add action listener to storedButton
-storedButton.addActionListener(new ActionListener() {
-    public void actionPerformed(ActionEvent e) {
-   
-              // Set dynamicPanel visibility
-    arrivingButton.setBackground(arrivingButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
-    arrivingButton.setForeground(arrivingButton.isSelected() ? selectedTextColor : defaultTextColor);
-
-    storedButton.setBackground(storedButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
-    storedButton.setForeground(storedButton.isSelected() ? selectedTextColor : defaultTextColor);
-
-    shippingButton.setBackground(shippingButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
-    shippingButton.setForeground(shippingButton.isSelected() ? selectedTextColor : defaultTextColor);
-   
-    dynamicPanel.setBackground(defaultBackgroundColor);
-    
-        dynamicPanel.removeAll();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        dynamicPanel.add(storedLocationLabel, gbc);
-
-        gbc.gridy++;
-        dynamicPanel.add(storedLocationField, gbc);
-
-        gbc.gridy++;
-        dynamicPanel.add(storedDateLabel, gbc);
-
-        gbc.gridy++;
-        dynamicPanel.add(storedDateField, gbc);
-        
-         
-
-        dynamicPanel.setVisible(true);
-        dynamicPanel.revalidate();
-        dynamicPanel.repaint();
- 
-    }
-});
-
-// Add action listener to shippingButton
-shippingButton.addActionListener(new ActionListener() {
-    public void actionPerformed(ActionEvent e) {  
-        // Set dynamicPanel visibility
-    arrivingButton.setBackground(arrivingButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
-    arrivingButton.setForeground(arrivingButton.isSelected() ? selectedTextColor : defaultTextColor);
-
-    storedButton.setBackground(storedButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
-    storedButton.setForeground(storedButton.isSelected() ? selectedTextColor : defaultTextColor);
-
-    shippingButton.setBackground(shippingButton.isSelected() ? selectedBackgroundColor : defaultBackgroundColor);
-    shippingButton.setForeground(shippingButton.isSelected() ? selectedTextColor : defaultTextColor);
-           
-    dynamicPanel.setBackground(defaultBackgroundColor);
-    
-        dynamicPanel.removeAll();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        dynamicPanel.add(destinationLabel, gbc);
-
-        gbc.gridy++;
-        dynamicPanel.add(destinationField, gbc);
-
-        gbc.gridy++;
-        dynamicPanel.add(courierLabel, gbc);
-
-        gbc.gridy++;
-        dynamicPanel.add(courierField, gbc);
-
-        gbc.gridy++;
-        dynamicPanel.add(shippedDateLabel, gbc);
-
-        gbc.gridy++;
-        dynamicPanel.add(shippedDateField, gbc);
-
-        dynamicPanel.setVisible(true);
-        dynamicPanel.revalidate();
-        dynamicPanel.repaint();
-        
-   
-    }
-    
-});
 
      // ButtonGroup to ensure only one status can be selected at a time
         ButtonGroup statusGroup = new ButtonGroup();
@@ -776,52 +772,130 @@ shippingButton.addActionListener(new ActionListener() {
         saveButton.setFocusPainted(false); // Disable focus border
         
              
-        
+        //action for saving new records
         saveButton.addActionListener(new ActionListener() {
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        // Handle save action
-        String productName = nameField.getText();
-        String status = arrivingButton.isSelected() ? "Arriving" :
-                storedButton.isSelected() ? "Stored" :
-                        shippingButton.isSelected() ? "Shipped" : "";
-
-        String details = "";
-
-        if (status.equals("Arriving")) {
-            details = "Origin: " + originField.getText() + ", Condition:  " + conditionField.getText() + ", Arrival Date: " + arrivalDateField.getText();
-        } else if (status.equals("Stored")) {
-            details = "Shelf Location: " + storedLocationField.getText() + ", Date Stored: " + storedDateField.getText();
-        } else if (status.equals("Shipped")) {
-            details = "Destination: " + destinationField.getText() + ", Courier: " + courierField.getText() + ", Date Shipped: " + shippedDateField.getText();
-        }
-
-        if (record == null) {
-            productRecords.add(new ProductRecord(productName, status, details));
-        } else {
-            record.setProductName(productName);
-            record.setStatus(status);
-            record.setDetails(details);
-        }
-        updateProductListPanel();
-        inputFrame.dispose(); // Close the input frame after saving
-        savingRecords(productRecords);
-    }
-});
+        @Override
+	    public void actionPerformed(ActionEvent e) {
+	        // Handle save action
+        	
+        	int storedLocation = 0;
+            
+        	
+        	List<Integer> IDList = productRecords.stream()
+                    .map(ProductRecord::getProductID)
+                    .collect(Collectors.toList()); 
+        	
+	        String productName = nameField.getText();
+	        String status = arrivingButton.isSelected() ? "Arriving" :
+	                		storedButton.isSelected() ? "Stored" :
+	                        shippingButton.isSelected() ? "Shipped" : "";
+	
+	        String details = "";
+	
+	        if (status.equals("Arriving")) {
+	            details = "Origin: " + originField.getText() + ", Condition:  " + conditionField.getText() + ", Arrival Date: " + arrivalDateField.getText();
+	        } else if (status.equals("Stored")) {
+	            details = "Shelf Location: " + storedLocationField.getText() + ", Date Stored: " + storedDateField.getText();
+	            try {
+	                storedLocation = Integer.parseInt(storedLocationField.getText());
+	            } catch (NumberFormatException e1) {
+	                JOptionPane.showMessageDialog(null, "Invalid stored location input. Please enter a valid number.", "Input Error", JOptionPane.ERROR_MESSAGE);
+	                
+	            }
+	        
+	        } else if (status.equals("Shipped")) {
+	            details = "Destination: " + destinationField.getText() + ", Courier: " + courierField.getText() + ", Date Shipped: " + shippedDateField.getText();
+	        }
+	        
+	        //saving new record
+	        if (record == null) {
+	        	
+	        	
+	        	
+	        	//random number generator for product id excepting currently existing product id
+	        	int product_id = sqlexecute.uniqueIDGenerator(1, 1000000, IDList);
+	        	
+	        	//instance of arriving stored and shipped
+	        	ArrivingProduct arriving = new ArrivingProduct(product_id, 
+	        			productName, 
+	        			status, 
+	        			originField.getText(), 
+	        			conditionField.getText(),
+	        			arrivalDateField.getText()
+	        			);
+	        	
+	        	StoredProduct stored = new StoredProduct(product_id, 
+	        			productName, 
+	        			status, 
+	        			storedLocation, 
+	        			storedDateField.getText()		
+	        			);
+	        	
+	        	
+	        	
+	        	ShippedProduct shipped = new ShippedProduct(product_id, 
+	        			productName, 
+	        			status, 
+	        			destinationField.getText(), 
+	        			courierField.getText(),
+	        			arrivalDateField.getText() 
+	        			);
+	        	
+	        	//switch case and method to save products to sql base on status 		
+	        	switch (status) {
+				case "Arriving":
+					controller.addNewArriving(arriving);
+					break;
+				case "Stored":
+					controller.addNewStored(stored);
+					break;
+				case "Shipped":
+					controller.addNewShipped(shipped);
+					break;
+				}		
+	        	
+	        			
+	        	
+	            productRecords.add(new ProductRecord(productName, status, details));
+	            
+	        } else {
+	        	
+	        	//updating existing record
+	        	
+	        	
+	            record.setProductName(productName);
+	            record.setStatus(status);
+	            record.setDetails(details);
+	            controller.updateDBRecord(record);
+	            
+	        }
+	        
+	        
+	        
+	        
+	        updateProductListPanel();
+	        inputFrame.dispose(); // Close the input frame after saving
+	     
+	    }
+	    });
 
         
-
+        //button for cancel
         JButton cancelButton = new JButton("Cancel");
         cancelButton.setBackground(Color.WHITE);
         cancelButton.setForeground(new Color(12, 116, 137));
         cancelButton.setFocusPainted(false); // Disable focus border
         
+        
         cancelButton.addActionListener(new ActionListener() {
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 inputFrame.dispose(); // Close the input frame without saving
             }
         });
+        
+        
         buttonPanel.add(cancelButton);
         buttonPanel.add(saveButton);
 
@@ -833,9 +907,12 @@ shippingButton.addActionListener(new ActionListener() {
 
         inputFrame.setVisible(true); // Make the frame visible
 
+        
+        // loading existing record
         if (record != null) {
             nameField.setText(record.getProductName());
             String status = record.getStatus();
+            
             if (status.equals("Arriving")) {
                 arrivingButton.doClick();
                 String[] details = record.getDetails().split(", ");
@@ -854,119 +931,127 @@ shippingButton.addActionListener(new ActionListener() {
                 courierField.setText(details[1].split(": ")[1]);
                 shippedDateField.setText(details[2].split(": ")[1]);
             }
-            
         }        
+    
+    
+    
+    
+    
+    
+    
+    
     }
     
-      
-
-private void updateProductListPanel() {
+ 
     
-      Font comfortaaFont = null;
-        try {
-            comfortaaFont = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/fonts/Comfortaa-Bold.ttf")).deriveFont(14f);
-        } catch (FontFormatException | IOException e) {
-            e.printStackTrace();
-        } 
-             
-   productListPanel.removeAll();
-    
-    for (ProductRecord record : productRecords) {
-        if (currentFilterStatus.equals("All") || record.getStatus().equals(currentFilterStatus)) {
-            JPanel productPanel = new JPanel();
-            productPanel.setLayout(null);
-            productPanel.setPreferredSize(new Dimension(100, 120));
-            productPanel.setBorder(roundedBorder);    
-
-            JLabel productNameLabel = new JLabel("Product Name:     " + record.getProductName());
-            productNameLabel.setFont(comfortaaFont);
-            productNameLabel.setBounds(10, 10, 300, 20);
-            productPanel.add(productNameLabel);
-
-            
-                    
-            JLabel statusLabel = new JLabel("Status:   " + record.getStatus());
-            statusLabel.setFont(comfortaaFont);
-            statusLabel.setBounds(30, 40, 150, 20);
-            productPanel.add(statusLabel);
-
-            JLabel detailsLabel = new JLabel(record.getDetails());
-            detailsLabel.setFont(comfortaaFont);
-            detailsLabel.setBounds(200, 40, 600, 20);
-            productPanel.add(detailsLabel);
-
-            
-           JButton editButton = new JButton("Edit");
-            editButton.setBounds(870, 25, 120, 30);
-            editButton.setFocusPainted(false); // Disable focus border
-            
-        if (comfortaaFont != null) {
-            editButton.setFont(comfortaaFont);
-        } else {
-            // Fallback to a default font if Comfortaa is not loaded
-            editButton.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        }
-editButton.setBackground(new Color(251, 251, 251)); // Set the default background color
-editButton.setForeground(new Color(12, 116, 137)); // Set the default text color
-editButton.setFocusPainted(false); // Disable focus border
-
-            editButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    showInputFrame(record);
-                }
-            });
-            productPanel.add(editButton);
-
-            JButton deleteButton = new JButton("Delete");
-            deleteButton.setBounds(1000, 25, 120, 30);
-            deleteButton.setFocusPainted(false); // Disable focus border
-                    if (comfortaaFont != null) {
-            deleteButton.setFont(comfortaaFont);
-        } else {
-            // Fallback to a default font if Comfortaa is not loaded
-            deleteButton.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        }
-deleteButton.setBackground(selectedBackgroundColor); // Set the default background color
-deleteButton.setForeground(selectedTextColor); // Set the default text color
-deleteButton.setFocusPainted(false); // Disable focus border
-
-
-      deleteButton.addActionListener(new ActionListener() {
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        
-        JDialog dialog = new JDialog();
-        
-        // Set the background color
-        dialog.getContentPane().setBackground(Color.gray);
-        
-        
-        int response = JOptionPane.showConfirmDialog(
-            null,
-            "Are you sure you want to delete?",
-            "Confirm Deletion",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE
-        );
-
-        if (response == JOptionPane.YES_OPTION) {
-            productRecords.remove(record);
-            updateProductListPanel();
-        }
-    }
-});
-            productPanel.add(deleteButton);
-            productListPanel.add(productPanel);
-        }
-        
-        
-    }
-    productListPanel.revalidate();
-    productListPanel.repaint();  
-}
-
-}
+	private void updateProductListPanel() {
+	    
+	      Font comfortaaFont = null;
+	        try {
+	            comfortaaFont = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/fonts/Comfortaa-Bold.ttf")).deriveFont(14f);
+	        } catch (FontFormatException | IOException e) {
+	            e.printStackTrace();
+	        } 
+	             
+	   productListPanel.removeAll();
+	    
+	    for (ProductRecord record : productRecords) {
+	        if (currentFilterStatus.equals("All") || record.getStatus().equals(currentFilterStatus)) {
+	            JPanel productPanel = new JPanel();
+	            productPanel.setLayout(null);
+	            productPanel.setPreferredSize(new Dimension(100, 120));
+	            productPanel.setBorder(roundedBorder);    
+	
+	            JLabel productNameLabel = new JLabel("Product Name:     " + record.getProductName());
+	            productNameLabel.setFont(comfortaaFont);
+	            productNameLabel.setBounds(10, 10, 300, 20);
+	            productPanel.add(productNameLabel);
+	
+	            
+	                    
+	            JLabel statusLabel = new JLabel("Status:   " + record.getStatus());
+	            statusLabel.setFont(comfortaaFont);
+	            statusLabel.setBounds(30, 40, 150, 20);
+	            productPanel.add(statusLabel);
+	
+	            JLabel detailsLabel = new JLabel(record.getDetails());
+	            detailsLabel.setFont(comfortaaFont);
+	            detailsLabel.setBounds(200, 40, 600, 20);
+	            productPanel.add(detailsLabel);
+	
+	            
+	           JButton editButton = new JButton("Edit");
+	            editButton.setBounds(870, 25, 120, 30);
+	            editButton.setFocusPainted(false); // Disable focus border
+	            
+	        if (comfortaaFont != null) {
+	            editButton.setFont(comfortaaFont);
+	        } else {
+	            // Fallback to a default font if Comfortaa is not loaded
+	            editButton.setFont(new Font("SansSerif", Font.PLAIN, 14));
+	        }
+	editButton.setBackground(new Color(251, 251, 251)); // Set the default background color
+	editButton.setForeground(new Color(12, 116, 137)); // Set the default text color
+	editButton.setFocusPainted(false); // Disable focus border
+	
+	            editButton.addActionListener(new ActionListener() {
+	                @Override
+	                public void actionPerformed(ActionEvent e) {
+	                    showInputFrame(record);
+	                }
+	            });
+	            productPanel.add(editButton);
+	
+	            JButton deleteButton = new JButton("Delete");
+	            deleteButton.setBounds(1000, 25, 120, 30);
+	            deleteButton.setFocusPainted(false); // Disable focus border
+	                    if (comfortaaFont != null) {
+	            deleteButton.setFont(comfortaaFont);
+	        } else {
+	            // Fallback to a default font if Comfortaa is not loaded
+	            deleteButton.setFont(new Font("SansSerif", Font.PLAIN, 14));
+	        }
+	deleteButton.setBackground(selectedBackgroundColor); // Set the default background color
+	deleteButton.setForeground(selectedTextColor); // Set the default text color
+	deleteButton.setFocusPainted(false); // Disable focus border
+	
+	
+	      deleteButton.addActionListener(new ActionListener() {
+	    @Override
+	    public void actionPerformed(ActionEvent e) {
+	        
+	        JDialog dialog = new JDialog();
+	        
+	        // Set the background color
+	        dialog.getContentPane().setBackground(Color.gray);
+	        
+	        
+	        int response = JOptionPane.showConfirmDialog(
+	            null,
+	            "Are you sure you want to delete?",
+	            "Confirm Deletion",
+	            JOptionPane.YES_NO_OPTION,
+	            JOptionPane.WARNING_MESSAGE
+	        );
+	
+	        if (response == JOptionPane.YES_OPTION) {
+	        	controller.deleteRecord(record);
+	            productRecords.remove(record);
+	            updateProductListPanel();
+	        }
+	    }
+	});
+	            productPanel.add(deleteButton);
+	            productListPanel.add(productPanel);
+	        }
+	        
+	        
+	    }
+	    productListPanel.revalidate();
+	    productListPanel.repaint();  
+	}
+	
+	}
 
 
 

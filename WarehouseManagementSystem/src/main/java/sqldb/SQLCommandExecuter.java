@@ -6,53 +6,89 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 import model.ArrivingProduct;
+import model.Product;
 import model.ProductRecord;
-import model.ShippingProduct;
+import model.ShippedProduct;
 import model.StoredProduct;
 
-public class SQLCommandExecuter {
-    private Connection connection;
 
+public class SQLCommandExecuter {
+    private Connection connection ;
+    private Statement statement;
+    
     public SQLCommandExecuter() {
-        this.connection = ConnectionToSQL.getConnection();
+
+    }
+    
+    //methods for connection and statement; to be execute every time a query is called
+    public void establishConnection() {
+   
+		try {
+			connection = ConnectionToSQL.databaseConnection();
+			statement = connection.createStatement();
+			if(connection == null) {
+				System.out.println("Failed to establish Connection!");
+			} else {
+				System.out.println("Connected!");
+			}
+		} catch (SQLException e) {
+			
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+    }
+    
+    public void CloseConnection()  {
+    	try {
+			connection.close();
+			statement.close();
+			System.out.println("Connection Closed.");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
     
     // querying arriving product
     public List<ArrivingProduct> getArrivingProducts() throws SQLException {
         List<ArrivingProduct> arrivingProducts = new ArrayList<>();
-        String query = "SELECT arrive_product_id, product_name, status, origin, condition, arrival_dateandtime FROM arrival_product_detail";
-        Statement statement = connection.createStatement();
+        String query = "SELECT product_id, product_name, status, origin, condition, arriving_dateandtime FROM arriving_product_detail";
         ResultSet result = statement.executeQuery(query);
 
         while (result.next()) {
-            int arrive_product_id = result.getInt("arrive_product_id");
+            int arriving_product_id = result.getInt("product_id");
             String product_name = result.getString("product_name");
             String status = result.getString("status");
             String origin = result.getString("origin");
             String condition = result.getString("condition");
-            String arrival_dateandtime = result.getString("arrival_dateandtime");
+            String arriving_dateandtime = result.getString("arriving_dateandtime");
             
 
-            System.out.println(
+            /*System.out.println(
             		"Arriving Products " +
-            		"Fetched product ID: " + arrive_product_id + 
+            		"Fetched product ID: " + arriving_product_id + 
             		", name: " + product_name + 
             		", status: " + status +
             		", origin: " + origin + 
             		", condition: " + condition +
-            		", arrival_dateandtime: " + arrival_dateandtime
-            		);
+            		", arrival_dateandtime: " + arriving_dateandtime
+            		);*/
 
             ArrivingProduct product = new ArrivingProduct(
-            		arrive_product_id, 
+            		arriving_product_id, 
             		product_name, 
             		status,
             		origin,
             		condition,
-            		arrival_dateandtime
+            		arriving_dateandtime
             		);
             
             
@@ -62,39 +98,37 @@ public class SQLCommandExecuter {
         System.out.println("size: " + arrivingProducts.size());
         
         
-        for(int i = 0;i < arrivingProducts.size(); i++) {
+        /*for(int i = 0;i < arrivingProducts.size(); i++) {
         	System.out.println(arrivingProducts.get(i).getProductName());
         }
-        /*for (ArrivingProduct product : arrivingProducts) {
+        for (ArrivingProduct product : arrivingProducts) {
         	System.out.println(product.getProductName());
         }*/
         return arrivingProducts;
     }
-    
-    
+
     //querying stored products
     public List<StoredProduct> getStoredProducts() throws SQLException {
         List<StoredProduct> storedProducts = new ArrayList<>();
-        String query = "SELECT stored_product_id, product_name, status, shelf_location, stored_dateandtime FROM stored_product_detail";
-        Statement statement = connection.createStatement();
+        String query = "SELECT product_id, product_name, status, shelf_location, stored_dateandtime FROM stored_product_detail";
         ResultSet result = statement.executeQuery(query);
 
         while (result.next()) {
-        	int stored_product_id = result.getInt("stored_product_id");
+        	int stored_product_id = result.getInt("product_id");
             String product_name = result.getString("product_name");
             String status = result.getString("status");
-            String shelf_location = result.getString("shelf_location");
+            int shelf_location = result.getInt("shelf_location");
             String stored_dateandtime = result.getString("stored_dateandtime");
             
 
-            System.out.println(
+           /* System.out.println(
             		"Stored Products " +
             		"Fetched product ID: " + stored_product_id + 
             		", name: " + product_name + 
             		", status: " + status +
             		", shelf_location: " + shelf_location + 
             		", stored_dateandtime: " + stored_dateandtime
-            		);
+            		);*/
 
             StoredProduct product = new StoredProduct(
             		stored_product_id, 
@@ -111,156 +145,310 @@ public class SQLCommandExecuter {
         System.out.println("size: " + storedProducts.size());
         
         
-        for(int i = 0;i < storedProducts.size(); i++) {
+        /*for(int i = 0;i < storedProducts.size(); i++) {
         	System.out.println(storedProducts.get(i).getProductName());
         }
-        /*for (ArrivingProduct product : arrivingProducts) {
+        for (ArrivingProduct product : arrivingProducts) {
         	System.out.println(product.getProductName());
         }*/
+        
+     
         return storedProducts;
+    
     }
     
-  //querying Shipping products
-    public List<ShippingProduct> getShippingProducts() throws SQLException {
-        List<ShippingProduct> shippingProducts = new ArrayList<>();
-        String query = "SELECT shipping_product_id, product_name, status, destination, courier, shipping_dateandtime FROM shipping_product_detail";
-        Statement statement = connection.createStatement();
+    //querying Shipping products
+    public List<ShippedProduct> getShippedProducts() throws SQLException {
+        List<ShippedProduct> shippedProducts = new ArrayList<>();
+        String query = "SELECT product_id, product_name, status, destination, courier, shipped_dateandtime FROM shipped_product_detail";
         ResultSet result = statement.executeQuery(query);
 
         while (result.next()) {
-            int shipping_product_id = result.getInt("shipping_product_id");
+            int shipped_product_id = result.getInt("product_id");
             String product_name = result.getString("product_name");
             String status = result.getString("status");
             String destination = result.getString("destination");
             String courier = result.getString("courier");
-            String shipping_dateandtime = result.getString("shipping_dateandtime");
+            String shipped_dateandtime = result.getString("shipped_dateandtime");
 
 
-            System.out.println(
+            /*System.out.println(
             		"Stored Products " +
-            		"Fetched product ID: " + shipping_product_id + 
+            		"Fetched product ID: " + shipped_product_id + 
             		", name: " + product_name + 
             		", status: " + status +
             		", destination: " + destination +
             		", courier: " + courier + 
-            		", shipping_dateandtime: " + shipping_dateandtime
-            		);
+            		", shipped_dateandtime: " + shipped_dateandtime
+            		);*/
 
-            ShippingProduct product = new ShippingProduct(
-            		shipping_product_id, 
+            ShippedProduct product = new ShippedProduct(
+            		shipped_product_id, 
             		product_name, 
             		status,
             		destination,
             		courier,
-            		shipping_dateandtime
+            		shipped_dateandtime
             		);
             
             
-            shippingProducts.add(product);
+            shippedProducts.add(product);
         }
         
-        System.out.println("size: " + shippingProducts.size());
+        System.out.println("size: " + shippedProducts.size());
         
         
-        for(int i = 0;i < shippingProducts.size(); i++) {
-        	System.out.println(shippingProducts.get(i).getProductName());
+        /*for(int i = 0;i < shippedProducts.size(); i++) {
+        	System.out.println(shippedProducts.get(i).getProductName());
         }
-        /*for (ArrivingProduct product : arrivingProducts) {
+       for (ArrivingProduct product : arrivingProducts) {
         	System.out.println(product.getProductName());
         }*/
-        return shippingProducts;
+        
+        
+        return shippedProducts;
+  
+        
     }
     
-
-    public List<ProductRecord> loadDataToProductRecord(List<ArrivingProduct> arrivingProducts, List<StoredProduct> storedProducts, List<ShippingProduct> shippingProducts) {
+    // collecting the retrieved record of three tables
+    // summarizing to one detail
+    public List<ProductRecord> loadDataToProductRecord(List<ArrivingProduct> arrivingProducts, List<StoredProduct> storedProducts, List<ShippedProduct> shippingProducts) {
         List<ProductRecord> productRecords = new ArrayList<>();
+        
         for (ArrivingProduct product : arrivingProducts) {
             System.out.println("Creating ProductRecord for product ID: " + product.getProductID() + ", name: " + product.getProductName() + ", status: " + product.getStatus());
-            ProductRecord productRecord = new ProductRecord(product.getProductName(), product.getStatus(), product.getDetails());
+            ProductRecord productRecord = new ProductRecord(product.getProductID(), product.getProductName(), product.getStatus(), product.getDetails());
             productRecords.add(productRecord);
         }
         
         
         for (StoredProduct product : storedProducts) {
             System.out.println("Creating ProductRecord for product ID: " + product.getProductID() + ", name: " + product.getProductName() + ", status: " + product.getStatus());
-            ProductRecord productRecord = new ProductRecord(product.getProductName(), product.getStatus(), product.getDetails());
+            ProductRecord productRecord = new ProductRecord(product.getProductID(),product.getProductName(), product.getStatus(), product.getDetails());
             productRecords.add(productRecord);
         }
         
-        for (ShippingProduct product : shippingProducts) {
+        
+        for (ShippedProduct product : shippingProducts) {
             System.out.println("Creating ProductRecord for product ID: " + product.getProductID() + ", name: " + product.getProductName() + ", status: " + product.getStatus());
-            ProductRecord productRecord = new ProductRecord(product.getProductName(), product.getStatus(), product.getDetails());
+            ProductRecord productRecord = new ProductRecord(product.getProductID(),product.getProductName(), product.getStatus(), product.getDetails());
             productRecords.add(productRecord);
         }
 
         return productRecords;
     }
 
-    private String getProductDetails(int productID) {
-        // Implement the method to retrieve product details from the database
-        // ...
 
-        System.out.println("Fetched product details for product ID: " + productID);
-
-        return "Product details for ID " + productID;
+    
+    
+    // method for updating the already have data
+    
+    //updating product table
+    public void updateProductTable(ProductRecord record) throws SQLException {
+    	String query = "UPDATE product SET product_name = ?, status = ? WHERE product_id = ?";
+    	PreparedStatement preparedStatement = connection.prepareStatement(query);
+    	
+    	preparedStatement.setString(1, record.getProductName());
+    	preparedStatement.setString(2, record.getStatus());
+    	preparedStatement.setInt(3, record.getProductID());
+    	
+    	int rowsAffected = preparedStatement.executeUpdate();
+    	System.out.println("product table updated");
+        System.out.println(rowsAffected + " row(s) updated");
     }
     
+    //update arriving table
+    public void updateArrivingTable(ArrivingProduct product) throws SQLException {
+    	String query = "UPDATE arriving SET origin = ?, condition = ?, arriving_dateandtime = ?  WHERE product_id = ?";
+    	PreparedStatement preparedStatement = connection.prepareStatement(query);
+    	
+    	preparedStatement.setString(1, product.getOrigin());
+    	preparedStatement.setString(2, product.getCondition());
+    	preparedStatement.setString(3, product.getArrivingDateandTime());
+    	preparedStatement .setInt(4, product.getProductID());
+    	
+    	int rowsAffected = preparedStatement.executeUpdate();
+    	System.out.println("arriving table updated");
+        System.out.println(rowsAffected + " row(s) updated");
+    }
+    
+  //update stored table
+    public void updatestoredTable(StoredProduct product) throws SQLException {
+    	String query = "UPDATE stored SET shelf_location = ?, stored_dateandtime = ?  WHERE product_id = ?";
+    	PreparedStatement preparedStatement = connection.prepareStatement(query);
+    	
+    	preparedStatement.setInt(1, product.getShelfLocation());
+    	preparedStatement.setString(2, product.getStoredDateandTime());
+    	preparedStatement .setInt(4, product.getProductID());
+    	
+    	int rowsAffected = preparedStatement.executeUpdate();
+    	System.out.println("stored table updated");
+        System.out.println(rowsAffected + " row(s) updated");
+    }
+    
+  //update shipped table
+    public void updateShippedTable(ShippedProduct product) throws SQLException {
+    	String query = "UPDATE shipped SET destination = ?, currier = ?, shipped_dateandtime = ?  WHERE product_id = ?";
+    	PreparedStatement preparedStatement = connection.prepareStatement(query);
+    	
+    	preparedStatement.setString(1, product.getDestination());
+    	preparedStatement.setString(2, product.getCurrier());
+    	preparedStatement.setString(3, product.getShippedDateandTime());
+    	preparedStatement .setInt(4, product.getProductID());
+    	
+    	int rowsAffected = preparedStatement.executeUpdate();
+    	System.out.println("Shipped table updated");
+        System.out.println(rowsAffected + " row(s) updated");
+    }
+    
+    
+    public int uniqueIDGenerator(int min, int max, List<Integer> existingNumbers) {
+        Random random = new Random();
+        Set<Integer> existingNumberSet = new HashSet<>(existingNumbers);
+
+        int number;
+        do {
+            number = random.nextInt((max - min) + 1) + min;
+        } while (existingNumberSet.contains(number));
+        
+        return number;
+    }
+    
+    
+    
+    // method of saving new data
+    
+    
+    // save new product
+    public void insertNewDataProduct(Product product) throws SQLException {
+    	String query = "INSERT INTO product (product_id, product_name, status) VALUES (?, ?, ?)";
+    	PreparedStatement preparedStatement = connection.prepareStatement(query);
+    	
+    	preparedStatement.setInt(1, product.getProductID());
+    	preparedStatement.setString(2, product.getProductName());
+    	preparedStatement.setString(3, product.getStatus());
+  	
+    	int rowsAffected = preparedStatement.executeUpdate();
+    	System.out.println("inserted new data on product table");
+        System.out.println(rowsAffected + " row(s) added");
+    }
+    
+    
+    //save new arriving
+    public void insertNewDataArriving(ArrivingProduct product) throws SQLException {
+    	
+    	String query = "INSERT INTO arriving (product_id, condition, origin, arriving_dateandtime, arriving_id) VALUES (?, ?, ?, ?, ?)";
+    	PreparedStatement preparedStatement = connection.prepareStatement(query);
+    	
+    	
+    	
+    	preparedStatement.setInt(1, product.getProductID());
+    	preparedStatement.setString(2, product.getCondition());
+    	preparedStatement.setString(3, product.getOrigin());
+    	preparedStatement.setString(4, product.getArrivingDateandTime());
+    	preparedStatement.setInt(5, product.getProductID());
+    	
+    	int rowsAffected = preparedStatement.executeUpdate();
+    	System.out.println("inserted new data on arriving table");
+        System.out.println(rowsAffected + " row(s) added");
+    }
+    
+    
+
+    //save new stored
+    public void insertNewDatastored(StoredProduct product) throws SQLException {
+    	String query = "INSERT INTO stored (product_id, shelf_id, dateandtimestored stored_id) VALUES ( ?, ?, ?, ?)";
+    	PreparedStatement preparedStatement = connection.prepareStatement(query);
+    	
+    	preparedStatement.setInt(1, product.getProductID());
+    	preparedStatement.setInt(2, product.getShelfLocation());
+    	preparedStatement.setString(3, product.getStoredDateandTime());
+    	preparedStatement.setInt(4, product.getProductID());
+    
+    	int rowsAffected = preparedStatement.executeUpdate();
+    	System.out.println("inserted new data on stored table");
+        System.out.println(rowsAffected + " row(s) added");
+    }
+    
+    
+
+    //save new shipped
+    public void insertNewDataShipped(ShippedProduct product) throws SQLException {
+    	String query = "INSERT INTO shipped (product_id, destination, courier, dateandtimeshipped, shipped_id) VALUES ( ?, ?, ?, ?, ?)";
+    	PreparedStatement preparedStatement = connection.prepareStatement(query);
+    	
+    	preparedStatement.setInt(1, product.getProductID());
+    	preparedStatement.setString(2, product.getDestination());
+    	preparedStatement.setString(3, product.getCurrier());
+    	preparedStatement.setString(4, product.getShippedDateandTime());
+    	preparedStatement.setInt(5, product.getProductID());
+    	
+    
+    	int rowsAffected = preparedStatement.executeUpdate();
+    	System.out.println("inserted new data on shipped table");
+        System.out.println(rowsAffected + " row(s) added");
+    }
+    
+    
+    
+ // Deleting records
+
+    public void deleteProduct(ProductRecord record) throws SQLException {
+        String query = "DELETE FROM product WHERE product_id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, record.getProductID());
+            int rowsAffected = preparedStatement.executeUpdate();
+            System.out.println("Deleted data on product table");
+            System.out.println(rowsAffected + " row(s) deleted");
+        }
+    }
+
+    // Delete arriving 
+    public void deleteArriving(ProductRecord record) throws SQLException {
+        String query = "DELETE FROM arriving WHERE product_id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, record.getProductID());
+            int rowsAffected = preparedStatement.executeUpdate();
+            System.out.println("Deleted data on arriving table");
+            System.out.println(rowsAffected + " row(s) deleted");
+        }
+    }
+
+    // Delete stored 
+    public void deleteStored(ProductRecord record) throws SQLException {
+        String query = "DELETE FROM stored WHERE product_id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, record.getProductID());
+            int rowsAffected = preparedStatement.executeUpdate();
+            System.out.println("Deleted data on stored table");
+            System.out.println(rowsAffected + " row(s) deleted");
+        }
+    }
+
+    // Delete shipped 
+    public void deleteShipped(ProductRecord record) throws SQLException {
+        String query = "DELETE FROM shipped WHERE product_id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, record.getProductID());
+            int rowsAffected = preparedStatement.executeUpdate();
+            System.out.println("Deleted data on shipped table");
+            System.out.println(rowsAffected + " row(s) deleted");
+        }
+    }
  
+    
     // setter that will catch productRecord for edited data 
     // use condition for arriving, stored, shipping 
     // concatinate the detail
     // store in specific list
     // use SQL query to UPDATE  or INSERT INTO
-    public void processRecordDetailsAndSave(String status, String records) {
-        PreparedStatement preparedStatement = null;
-        String[] details = records.split(", ");
-        try {
-            if (status.equals("Arriving")) {
-                // Inserting data into the database for arriving products
-                String sql = "INSERT INTO ArrivingProducts (Origin, Condition, ArrivalDate) VALUES (?, ?, ?)";
-                preparedStatement = connection.prepareStatement(sql);
-                //preparedStatement.setString(1, details[0].split(": ")[1]); // ProductName
-                preparedStatement.setString(2, details[0].split(": ")[1]); // Origin
-                preparedStatement.setString(3, details[1].split(": ")[1]); // Condition
-                preparedStatement.setString(4, details[2].split(": ")[1]); // ArrivalDate
-                preparedStatement.executeUpdate();
-                System.out.println("succesfully Inputed Arriving Data");
-            } else if (status.equals("Stored")) {
-                // Inserting data into the database for stored products
-                String sql = "INSERT INTO StoredProducts ( Location, StoredDate) VALUES (?, ?)";
-                preparedStatement = connection.prepareStatement(sql);
-                //preparedStatement.setString(1, details[0].split(": ")[1]); // ProductName
-                preparedStatement.setString(2, details[0].split(": ")[1]); // Location
-                preparedStatement.setString(3, details[1].split(": ")[1]); // StoredDate
-                preparedStatement.executeUpdate();
-                System.out.println("succesfully Inputed Stored Data");
-            } else if (status.equals("Shipped")) {
-                // Inserting data into the database for shipped products
-                String sql = "INSERT INTO ShippedProducts (Destination, Courier, ShippedDate) VALUES (?, ?, ?)";
-                preparedStatement = connection.prepareStatement(sql);
-                //preparedStatement.setString(1, details[0].split(": ")[1]); // ProductName
-                preparedStatement.setString(2, details[0].split(": ")[1]); // Destination
-                preparedStatement.setString(3, details[1].split(": ")[1]); // Courier
-                preparedStatement.setString(4, details[2].split(": ")[1]); // ShippedDate
-                preparedStatement.executeUpdate();
-                System.out.println("succesfully Inputed Shipped Data");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            // Closing resources
-            try {
-                if (preparedStatement != null) {
-                    preparedStatement.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    
+   
+    //closing statements result and connection
+
     
 }
-}
+
 
 
 

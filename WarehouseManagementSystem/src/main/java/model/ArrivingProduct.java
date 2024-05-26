@@ -1,7 +1,7 @@
 package model;
 
 public class ArrivingProduct extends Product{
-	private String origin, condition, arrival_dateandtime;
+	private String origin, condition, arriving_dateandtime;
 	
 	
 	public ArrivingProduct(int product_id, 
@@ -17,7 +17,7 @@ public class ArrivingProduct extends Product{
 		
 		this.origin = origin;
 		this.condition = condition;
-		this.arrival_dateandtime = arrival_dateandtime;
+		this.arriving_dateandtime = arrival_dateandtime;
 	}
 	
 	public ArrivingProduct(int product_id, 
@@ -28,8 +28,9 @@ public class ArrivingProduct extends Product{
 	super(product_id, product_name, status);
 	this.origin = "N/A";
 	this.condition = "N/A";
-	this.arrival_dateandtime = "N/A";
-}
+	this.arriving_dateandtime = "N/A";
+	}
+	
 	
 	 @Override
 	    public int getProductID() {
@@ -52,11 +53,11 @@ public class ArrivingProduct extends Product{
     public String getCondition() {return condition;}
     public void setCondition(String condition) {this.condition = condition;}
 	
-    public String getArrivalDateandTime() {return arrival_dateandtime;}
-    public void setArrivalDateandTime(String arrival_dateandtime) {this.arrival_dateandtime = arrival_dateandtime;}
+    public String getArrivingDateandTime() {return arriving_dateandtime;}
+    public void setArrivalDateandTime(String arrival_dateandtime) {this.arriving_dateandtime = arrival_dateandtime;}
 	
     public String getDetails() {
-    	return "Origin: " + origin + ", Condition:  " + condition +  ", Arrival Date: " + arrival_dateandtime;
+    	return "Origin: " + origin + ", Condition:  " + condition +  ", Arrival Date: " + arriving_dateandtime;
     }
 	
     

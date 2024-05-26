@@ -8,11 +8,11 @@ import java.sql.Statement;
 
 
 public class ConnectionToSQL {
-	static String  sqlurl = "jdbc:sqlserver://LAPTOP-S4DGMEM3\\WAREHOUSEMS;database=WarehouseManagementdb;username=sa;password=password1234;portNumber=1433;trustServerCertificate=true";
+	 static String  sqlurl = "jdbc:sqlserver://LAPTOP-S4DGMEM3\\WAREHOUSEMS;database=WarehouseManagementdb;username=sa;password=password1234;portNumber=1433;trustServerCertificate=true";
 
-	public static Connection getConnection() {
+	public static Connection databaseConnection() {
 		try {
-			return DriverManager.getConnection(sqlurl);
+			 return DriverManager.getConnection(sqlurl);
 		} catch (SQLException e) {
 			 throw new RuntimeException("Error connecting to the database", e);
 		}
