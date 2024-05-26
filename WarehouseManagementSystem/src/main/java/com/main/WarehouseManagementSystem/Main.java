@@ -12,7 +12,5 @@ public class Main {
 		SQLCommandExecuter model = new SQLCommandExecuter();
 		Controller controller = new Controller(model);
 		Dashboard view = new Dashboard(controller.loadDataFromDB());
-		
 	}
-
 }

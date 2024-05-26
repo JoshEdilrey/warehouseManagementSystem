@@ -30,7 +30,7 @@ public class ShippingProduct extends Product{
     public void setShippedDateandTime(String shipped_dateandtime) {this.shipped_dateandtime = shipped_dateandtime;}
 	
     public String getDetails() {
-    	return "destination: " + destination + ", currier: " + currier  + ", Shipped Date and Time: " + shipped_dateandtime;
+    	return "Destination: " + destination + ", Courier: " + currier  + ", Date Shipped: " + shipped_dateandtime;
     }
 	
 	

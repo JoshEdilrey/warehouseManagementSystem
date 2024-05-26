@@ -10,6 +10,7 @@ import java.util.List;
 import javax.swing.plaf.ColorUIResource;
 
 import model.ProductRecord;
+import sqldb.SQLCommandExecuter;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import javax.swing.BorderFactory;
 public class Dashboard extends JFrame{
 
     private List<ProductRecord> productRecords;
+    private SQLCommandExecuter sqlexecute;
     private JPanel productListPanel;
     private String currentFilterStatus = "All";
     private JLabel arrivingCardLabel;
@@ -132,6 +134,7 @@ public class BottomShadowBorder implements Border {
         
         // Initialize product records list
         this.productRecords = list;
+        this.sqlexecute = new SQLCommandExecuter();
 
         // Set up the main frame
         setTitle("Dashboard");
@@ -357,12 +360,17 @@ add(shippingButton);
 	
 	updateProductListPanel();
 	setVisible(true);          
-        
+	
 
 
     }
     
     
+    public void savingRecords(List<ProductRecord> productRecords) {
+    	
+    	for(ProductRecord record : productRecords)
+    	sqlexecute.processRecordDetailsAndSave(record.getStatus(), record.getDetails());
+    }
     
     
     
@@ -797,6 +805,7 @@ shippingButton.addActionListener(new ActionListener() {
         }
         updateProductListPanel();
         inputFrame.dispose(); // Close the input frame after saving
+        savingRecords(productRecords);
     }
 });
 

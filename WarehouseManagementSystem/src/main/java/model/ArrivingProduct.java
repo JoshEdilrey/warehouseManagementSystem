@@ -56,7 +56,7 @@ public class ArrivingProduct extends Product{
     public void setArrivalDateandTime(String arrival_dateandtime) {this.arrival_dateandtime = arrival_dateandtime;}
 	
     public String getDetails() {
-    	return "Origin: " + origin + ", Condition: " + condition +  ", Arrival Date and Time: " + arrival_dateandtime;
+    	return "Origin: " + origin + ", Condition:  " + condition +  ", Arrival Date: " + arrival_dateandtime;
     }
 	
     

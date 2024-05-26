@@ -1,6 +1,7 @@
 package sqldb;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -205,10 +206,61 @@ public class SQLCommandExecuter {
     }
     
  
-
-
+    // setter that will catch productRecord for edited data 
+    // use condition for arriving, stored, shipping 
+    // concatinate the detail
+    // store in specific list
+    // use SQL query to UPDATE  or INSERT INTO
+    public void processRecordDetailsAndSave(String status, String records) {
+        PreparedStatement preparedStatement = null;
+        String[] details = records.split(", ");
+        try {
+            if (status.equals("Arriving")) {
+                // Inserting data into the database for arriving products
+                String sql = "INSERT INTO ArrivingProducts (Origin, Condition, ArrivalDate) VALUES (?, ?, ?)";
+                preparedStatement = connection.prepareStatement(sql);
+                //preparedStatement.setString(1, details[0].split(": ")[1]); // ProductName
+                preparedStatement.setString(2, details[0].split(": ")[1]); // Origin
+                preparedStatement.setString(3, details[1].split(": ")[1]); // Condition
+                preparedStatement.setString(4, details[2].split(": ")[1]); // ArrivalDate
+                preparedStatement.executeUpdate();
+                System.out.println("succesfully Inputed Arriving Data");
+            } else if (status.equals("Stored")) {
+                // Inserting data into the database for stored products
+                String sql = "INSERT INTO StoredProducts ( Location, StoredDate) VALUES (?, ?)";
+                preparedStatement = connection.prepareStatement(sql);
+                //preparedStatement.setString(1, details[0].split(": ")[1]); // ProductName
+                preparedStatement.setString(2, details[0].split(": ")[1]); // Location
+                preparedStatement.setString(3, details[1].split(": ")[1]); // StoredDate
+                preparedStatement.executeUpdate();
+                System.out.println("succesfully Inputed Stored Data");
+            } else if (status.equals("Shipped")) {
+                // Inserting data into the database for shipped products
+                String sql = "INSERT INTO ShippedProducts (Destination, Courier, ShippedDate) VALUES (?, ?, ?)";
+                preparedStatement = connection.prepareStatement(sql);
+                //preparedStatement.setString(1, details[0].split(": ")[1]); // ProductName
+                preparedStatement.setString(2, details[0].split(": ")[1]); // Destination
+                preparedStatement.setString(3, details[1].split(": ")[1]); // Courier
+                preparedStatement.setString(4, details[2].split(": ")[1]); // ShippedDate
+                preparedStatement.executeUpdate();
+                System.out.println("succesfully Inputed Shipped Data");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            // Closing resources
+            try {
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    
+    
 }
-
+}
 
 
 

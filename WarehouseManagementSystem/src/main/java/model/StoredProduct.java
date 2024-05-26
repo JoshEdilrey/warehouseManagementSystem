@@ -23,7 +23,7 @@ public class StoredProduct extends Product{
     public void setStoredDateandTime(String stored_dateandtime) {this.stored_dateandtime = stored_dateandtime;}
 	
     public String getDetails() {
-    	return "Shelf Location: " + shelf_location + ", Stored Date and Time: " + stored_dateandtime;
+    	return "Shelf Location: " + shelf_location + ", Date Stored: " + stored_dateandtime;
     }
 	
 	
