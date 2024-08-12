@@ -274,7 +274,7 @@ public class SQLCommandExecuter {
     }
     
   //update stored table
-    public void updatestoredTable(StoredProduct product) throws SQLException {
+    public void updateStoredTable(StoredProduct product) throws SQLException {
     	String query = "UPDATE stored SET shelf_location = ?, stored_dateandtime = ?  WHERE product_id = ?";
     	PreparedStatement preparedStatement = connection.prepareStatement(query);
     	
@@ -358,7 +358,7 @@ public class SQLCommandExecuter {
 
     //save new stored
     public void insertNewDatastored(StoredProduct product) throws SQLException {
-    	String query = "INSERT INTO stored (product_id, shelf_id, dateandtimestored stored_id) VALUES ( ?, ?, ?, ?)";
+    	String query = "INSERT INTO stored (product_id, shelf_id, dateandtimestored, stored_id) VALUES ( ?, ?, ?, ?)";
     	PreparedStatement preparedStatement = connection.prepareStatement(query);
     	
     	preparedStatement.setInt(1, product.getProductID());

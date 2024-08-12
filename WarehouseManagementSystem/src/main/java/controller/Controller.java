@@ -51,23 +51,27 @@ public class Controller {
 		
 		try {
 			
-			ArrivingProduct arriving = record.arrivingSplitter(record.getStatus(), record.getDetails());
-			StoredProduct stored = record.storedSplitter(record.getStatus(), record.getDetails());
-			ShippedProduct shipped = record.shippedSplitter(record.getStatus(), record.getDetails());
 			
-			model.updateProductTable(record);
+			
+			
+			
+			
 			
 			switch (record.getStatus()) {
 			case "Arriving":
+				ArrivingProduct arriving = record.arrivingSplitter(record.getStatus(), record.getDetails());
 				model.updateArrivingTable(arriving);
 				break;
 			case "Stored":
-				model.updatestoredTable(stored);
+				StoredProduct stored = record.storedSplitter(record.getStatus(), record.getDetails());
+				model.updateStoredTable(stored);
 				break;
 			case "Shipped":
+				ShippedProduct shipped = record.shippedSplitter(record.getStatus(), record.getDetails());
 				model.updateShippedTable(shipped);
 				break;
 			}
+			model.updateProductTable(record);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			JOptionPane.showMessageDialog(null, "An error occurred around updateDBRecord: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
